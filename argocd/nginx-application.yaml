@@ -1,36 +1,20 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: argoproj.io/v1alpha1
+kind: Application
 metadata:
-  name: nginx
-  namespace: gitops-demo
-  labels:
-    app: nginx
+  name: nginx-lab
+  namespace: argocd
 spec:
-  replicas: 2
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - name: nginx
-        image: public.ecr.aws/nginx/nginx:latest
-        ports:
-        - name: http
-          containerPort: 80
-        readinessProbe:
-          httpGet:
-            path: /
-            port: http
-          initialDelaySeconds: 3
-          periodSeconds: 5
-        resources:
-          requests:
-            cpu: 50m
-            memory: 64Mi
-          limits:
-            cpu: 250m
-            memory: 128Mi
+  project: default
+  source:
+    repoURL: https://github.com/gds-techlanders/eks-gitops-lab.git
+    targetRevision: main
+    path: apps/nginx
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: gitops-demo
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: true
+    syncOptions:
+    - CreateNamespace=true
